@@ -89,7 +89,7 @@ if [ -n "${HA20_PASS:-}" ] && [ "$HA20_PASS" -ge "$THRESHOLD" ]; then NEED_FULL=
 
 if [ "$NEED_FULL" = "1" ]; then
     echo "[full] running MMLU-Pro + EQ (HA20=$HA20_PASS, threshold=$THRESHOLD, FULL=${FULL:-0})"
-    MMLU_LOG=$OUT_DIR/mmlu_pro.log
+    MMLU_LOG=$OUT/mmlu_pro.log
     MMLU_OUT=$OUT/mmlu_pro
     bash /tmp/phase2/common/mmlu_pro_runner.sh "$TAG" "http://127.0.0.1:$PORT/v1" > $OUT/mmlu_pro.log 2>&1 || true
     MMLU_VAL=$(grep -E "mmlu_pro\s*\|.*exact_match" $OUT/mmlu_pro.log | head -1 | grep -oE '[0-9]\.[0-9]+' | head -1)

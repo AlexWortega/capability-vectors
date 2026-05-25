@@ -22,8 +22,20 @@ All numbers from runs on eva02 (RTX A6000) using sglang nightly + custom benches
 | 3 | [v3-multi ablit](https://huggingface.co/AlexWortega/qwen35-4b-soyuz-abliterated-v3-multi) | per-layer ortho L8-24 | 0.5 | same contrast as v2 | 2/17 | 6/20 | — | — |
 | 4 | v4 ablit | MEAN, soyuz-self-only | 0.5 | L=12 AUC=0.808 | — | 6/20 | — | — |
 | 5 | v5_LR | LR probe, soyuz-only | 0.5 | L=31 AUC=1.000 ⚠ | 2/17 | 6/20 | — | — |
-| 6 | v5_SVD | SVD top-1, soyuz-only | 0.5 | L=27 AUC=0.777 | 1/17 | **10/20** | — | — |
+| 6 | v5_SVD | SVD top-1, soyuz-only | 0.5 | L=27 AUC=0.777 | 1/17 | **10/20** | **1.85%** | — |
 | 7 | v5_REG | Ridge reward-reg, soyuz-only | 0.5 | L=10 AUC=1.000 ⚠ | 1/17 | **10/20** | 2.06% | — |
+
+### Phase 2 — multimethod sweep
+
+| # | Variant | Method | strength | Bench setup notes | tbench-17 | HA20 | MMLU-Pro | EQ |
+|---|---|---|---:|---|---:|---:|---:|---:|
+| 8 | exp1 v9_multitok | 5-pos capture + mean direction | 0.5 | L=11 AUC=0.778 | 1/17 | 5/20 | — | — |
+| 9 | exp5 v7_agentonly | mean diff, **no MMLU-Pi** in contrast | 0.5 | L=6 (different circuit) | 0/17 | **9/20** | ⏳ | — |
+| — | exp2 hard_pairs | 51 same-task pairs, mean diff | 0.5 | — | ⏳ | ⏳ | — | — |
+| — | exp4 cfact | counterfactual injection | 0.5 | — | ⏳ | ⏳ | — | — |
+| — | exp3 steering | inference-time α·d (no weight edit) | — | needs custom server | 📋 | 📋 | — | — |
+
+See `results/phase2/sources.md` for the full per-experiment contrast source distribution and the MMLU-Pi-bias story.
 
 ## Per-task HermesAgent-20 wins (passes only)
 
