@@ -1,0 +1,6 @@
+*.pyc
+__pycache__/
+*.npz
+*.safetensors
+*.pt
+*.log
