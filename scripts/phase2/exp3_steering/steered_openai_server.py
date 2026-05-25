@@ -37,6 +37,7 @@ ALPHA = float(os.environ.get("STEER_ALPHA", "0.0"))
 LAYER = int(os.environ.get("STEER_LAYER", "16"))
 SERVED_NAME = os.environ.get("STEER_SERVED_NAME", "soyuz_steered")
 PORT = int(os.environ.get("STEER_PORT", "30090"))
+HERMES_TEMPLATE_PATH = os.environ.get("STEER_HERMES_TEMPLATE", "/etc/hermes_qwen.jinja")
 
 
 class SteerState:
@@ -94,6 +95,12 @@ def init_model():
     global TOK, MODEL
     print(f"[load] {MODEL_PATH}", flush=True); t0 = time.time()
     TOK = AutoTokenizer.from_pretrained(MODEL_PATH, trust_remote_code=True)
+    # Use the hermes_qwen.jinja chat template so HA20-style tool turns render
+    # into <tool_call>{json}</tool_call> blocks the model expects.
+    if HERMES_TEMPLATE_PATH and os.path.exists(HERMES_TEMPLATE_PATH):
+        with open(HERMES_TEMPLATE_PATH) as f:
+            TOK.chat_template = f.read()
+        print(f"[load] chat template <- {HERMES_TEMPLATE_PATH}", flush=True)
     MODEL = AutoModelForCausalLM.from_pretrained(
         MODEL_PATH, dtype=torch.bfloat16, device_map={"": 0},
         trust_remote_code=True, low_cpu_mem_usage=True,
