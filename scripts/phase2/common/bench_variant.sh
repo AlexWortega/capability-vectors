@@ -68,8 +68,8 @@ echo "[tbench] $TBENCH_LINE"
 
 # --- HA20 ---------------------------------------------------------------
 HA20_LOG=$OUT_DIR/ha20.log
-HOST_IP=$(getent hosts host.docker.internal 2>/dev/null | awk '{print $1}' || true)
-if [ -z "$HOST_IP" ]; then HOST_IP=172.18.0.1; fi
+# 172.18.0.1 = gateway of the gemma docker network (= host IP from inside HA20 verifier containers).
+HOST_IP=${HOST_IP:-172.18.0.1}
 HERMES_AGENT_20_BASE_URL="http://${HOST_IP}:$PORT/v1" \
     HERMES_AGENT_20_MODEL=$TAG \
     HERMES_AGENT_20_LABEL=${TAG}-ha20 \

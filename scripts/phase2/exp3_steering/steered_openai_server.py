@@ -107,24 +107,49 @@ def init_model():
 
 app = FastAPI()
 TOOL_RE = re.compile(r"<tool_call>\s*(\{.*?\})\s*</tool_call>", re.S)
+JSON_OBJ_RE = re.compile(r"\{(?:[^{}]|\{[^{}]*\})*\}", re.S)
+
+
+def _emit_call(name, arguments):
+    if not isinstance(arguments, str):
+        arguments = json.dumps(arguments, ensure_ascii=False)
+    return {
+        "id": f"call_{uuid.uuid4().hex[:24]}",
+        "type": "function",
+        "function": {"name": name, "arguments": arguments},
+    }
 
 
 def parse_tool_calls(text: str):
+    """Recognise both the hermes <tool_call>...</tool_call> wrapper and the
+    bare JSON form ({"analysis": "...", "command": "..."} or
+    {"analysis": "...", "search": "..."}) used by claw-eval/tbench rollouts."""
     calls = []
+    # 1) explicit hermes wrapper
     for m in TOOL_RE.finditer(text):
         try:
             obj = json.loads(m.group(1))
             name = obj.get("name") or obj.get("tool") or "tool"
             args = obj.get("arguments") if "arguments" in obj else obj
-            if not isinstance(args, str):
-                args = json.dumps(args, ensure_ascii=False)
-            calls.append({
-                "id": f"call_{uuid.uuid4().hex[:24]}",
-                "type": "function",
-                "function": {"name": name, "arguments": args},
-            })
+            calls.append(_emit_call(name, args))
         except Exception:
             continue
+    if calls:
+        return calls
+
+    # 2) bare-JSON form with command/search field
+    for m in JSON_OBJ_RE.finditer(text):
+        try:
+            obj = json.loads(m.group(0))
+        except Exception:
+            continue
+        if not isinstance(obj, dict):
+            continue
+        if "command" in obj:
+            calls.append(_emit_call("bash", {"command": obj["command"]}))
+        elif "search" in obj:
+            calls.append(_emit_call("search", {"query": obj["search"],
+                                                "limit": obj.get("limit", 5)}))
     return calls
 
 

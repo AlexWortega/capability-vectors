@@ -15,8 +15,7 @@ LAYERS=(${LAYERS:-10 16 27})
 
 echo "alpha,layer,ha20_pass,ha20_total,log" > $OUT_ROOT/sweep.csv
 
-HOST_IP=$(getent hosts host.docker.internal 2>/dev/null | awk '{print $1}' || true)
-if [ -z "$HOST_IP" ]; then HOST_IP=172.18.0.1; fi
+HOST_IP=${HOST_IP:-172.18.0.1}
 PORT=${STEER_URL##*:}
 PORT=${PORT%%/*}
 HA20_BASE="http://${HOST_IP}:${PORT}/v1"
