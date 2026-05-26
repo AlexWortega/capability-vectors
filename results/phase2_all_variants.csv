@@ -1,0 +1,8 @@
+ts,exp,variant,tbench_pass,tbench_total,ha20_pass,ha20_total,mmlu_pro,eqbench,auc,layer,method,strength,hf_url,notes
+2026-05-25T12:02:26.946297Z,exp1_multi_token,v9_multitok,1,17,5,20,,,,,mean,0.5,,
+2026-05-25T16:05:20.970007Z,exp5_agent_only,v7_agentonly,2,17,9,20,,,,,mean,0.5,,
+2026-05-25T16:59:50.075229Z,exp2_hard_pairs,v6_hardpairs,2,17,8,20,,,,,mean,0.5,,
+2026-05-25T19:22:01.631959Z,exp4_counterfact,v8_cfact,4,17,0,20,,,,,mean,0.5,,HA20 lost to GPU contention with parallel claude bench
+2026-05-26T02:51:11.986588Z,exp5_agent_only,v7_agentonly_mmlu,2,17,9,20,2.24,,,,mean,0.5,,"MMLU re-bench, EQ killed for time"
+2026-05-26T03:16:09.314157Z,exp4_counterfact,v8_cfact,2,17,9,20,,,,,mean,0.5,,
+2026-05-26T06:04:47.134367Z,exp2_hard_pairs,v6_hardpairs_mmlu,2,17,8,20,2.08,,,,mean,0.5,,"MMLU re-bench, EQ killed for time"

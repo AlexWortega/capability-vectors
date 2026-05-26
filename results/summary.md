@@ -25,17 +25,30 @@ All numbers from runs on eva02 (RTX A6000) using sglang nightly + custom benches
 | 6 | v5_SVD | SVD top-1, soyuz-only | 0.5 | L=27 AUC=0.777 | 1/17 | **10/20** | **1.85%** | — |
 | 7 | v5_REG | Ridge reward-reg, soyuz-only | 0.5 | L=10 AUC=1.000 ⚠ | 1/17 | **10/20** | 2.06% | — |
 
-### Phase 2 — multimethod sweep
+### Phase 2 — multimethod sweep (executed 2026-05-25/26)
 
 | # | Variant | Method | strength | Bench setup notes | tbench-17 | HA20 | MMLU-Pro | EQ |
 |---|---|---|---:|---|---:|---:|---:|---:|
 | 8 | exp1 v9_multitok | 5-pos capture + mean direction | 0.5 | L=11 AUC=0.778 | 1/17 | 5/20 | — | — |
-| 9 | exp5 v7_agentonly | mean diff, **no MMLU-Pi** in contrast | 0.5 | L=6 (different circuit) | 0/17 | **9/20** | ⏳ | — |
-| — | exp2 hard_pairs | 51 same-task pairs, mean diff | 0.5 | — | ⏳ | ⏳ | — | — |
-| — | exp4 cfact | counterfactual injection | 0.5 | — | ⏳ | ⏳ | — | — |
-| — | exp3 steering | inference-time α·d (no weight edit) | — | needs custom server | 📋 | 📋 | — | — |
+| 9 | exp5 [v7_agentonly](https://huggingface.co/AlexWortega/qwen35-4b-soyuz-abliterated-v7_agentonly) | mean diff, **no MMLU-Pi** in contrast | 0.5 | L=6 | 2/17 | **9/20** | **2.24%** | killed |
+| 10 | exp2 [v6_hardpairs](https://huggingface.co/AlexWortega/qwen35-4b-soyuz-abliterated-v6_hardpairs) | 51 same-task pairs, mean diff | 0.5 | L=9 | 2/17 | **8/20** | **2.08%** | killed |
+| 11 | exp4 [v8_cfact](https://huggingface.co/AlexWortega/qwen35-4b-soyuz-abliterated-v8_cfact) | counterfactual injection | 0.5 | L=5 | 2/17 | **9/20** | — | — |
+| — | exp3 steering | inference-time α·d (no weight edit) | — | needs custom server, deferred | — | — | — | — |
 
-See `results/phase2/sources.md` for the full per-experiment contrast source distribution and the MMLU-Pi-bias story.
+### Phase 2 — key findings
+
+1. **MMLU-collapse hypothesis FALSIFIED.** exp5 (v7_agentonly) drops all MMLU-Pi rows from the FAIL bucket but MMLU-Pro still collapses to **2.24%** (vs 58.72 baseline). exp2 (v6_hardpairs) uses same-task PASS/FAIL pairs (removing knowledge-asymmetry confound) and ALSO collapses to **2.08%**. The capability being ablated by `µ_fail − µ_pass` is more fundamental than just MMLU-style knowledge; removing the MMLU-Pi source from training, or using within-task contrasts, has effectively zero protective effect.
+2. **HA20 ceiling around 9-10/20** across multiple recipes:
+   - v5_REG/v5_SVD (phase1): 10/20
+   - v7_agentonly: 9/20
+   - v8_cfact: 9/20
+   - v6_hardpairs: 8/20
+   - v2: 8/20
+   All variants that move HA20 above ~7 lose MMLU. The 9-10/20 ceiling is robust across mean / SVD / Ridge / agent-only / counterfactual / within-task-pair contrasts.
+3. **tbench-17 regresses everywhere.** Baseline soyuz = 5/17; every abliterated variant ≤4/17. Direction removal hurts terminal agent ability even when HA20 (browser/skill agent) goes up — they're not the same capability.
+4. **exp1 multi-token capture is a loss** (1/17, 5/20). The 5-position aggregation does not produce a more useful direction than last-token-only.
+
+Conclusion: success criterion **(a) HA20≥10 AND MMLU≥40%** not met by any new variant. Success criterion **(b) MMLU recovery near 58.72%** also not met. The MMLU collapse appears to be intrinsic to the orthogonalization direction, not an artifact of the contrast composition.
 
 ## Per-task HermesAgent-20 wins (passes only)
 

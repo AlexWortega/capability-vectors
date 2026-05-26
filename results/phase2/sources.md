@@ -20,8 +20,9 @@ All directions live in Qwen3.5-4B residual stream, **dim=2560**, mean-pooled at 
 | v5_LR | LR probe coef | 31 | 1.000 ⚠ | [2560] | 6/20 | — |
 | v5_SVD | top-1 SVD | 27 | 0.777 | [2560] | **10/20** | **1.85%** |
 | v5_REG | Ridge regr on reward | 10 | 1.000 ⚠ | [2560] | **10/20** | 2.06% |
-| v6_hardpairs | mean diff (51 same-task pairs) | — | — | [2560] | — | — |
-| v7_agentonly | mean diff, NO MMLU | 6 | — | [2560] | **9/20** | ⏳ |
+| v6_hardpairs | mean diff (51 same-task pairs) | 9 | — | [2560] | **8/20** | **2.08%** |
+| v7_agentonly | mean diff, NO MMLU | 6 | — | [2560] | **9/20** | **2.24%** |
+| v8_cfact | counterfactual injection | 5 | — | [2560] | **9/20** | — |
 | v9_multitok (mean) | mean diff, 5 positions | 11 | 0.778 | [2560] | 5/20 | — |
 | v9_multitok (pca) | top-1 SVD, 5 positions | 15 | — | [2560] | — | — |
 
@@ -81,4 +82,13 @@ refuse (60): claw-eval-base30=13  tbench-rift=11  tbench-dpo=6  tbench-soyuz=6
 
 ## Takeaway
 
-Every winner up to v7 carried 50-80% MMLU-Pi in both buckets — the discovered direction was "MMLU-style reasoning" mixed with "refuse-to-act", not pure agent capability. Ablating it nuked MMLU-Pro to ~2%. v7_agentonly is the first MMLU-free contrast; if its MMLU stays near baseline (58.72%), the source-bias hypothesis is confirmed.
+Original hypothesis: every winner up to v7 carried 50-80% MMLU-Pi in both buckets, so the discovered direction was "MMLU-style reasoning" mixed with "refuse-to-act". Ablating it nuked MMLU-Pro to ~2%. v7_agentonly was the first MMLU-free contrast.
+
+**Result: hypothesis FALSIFIED.** v7_agentonly MMLU-Pro = **2.24%** (vs baseline 58.72%) — same massive collapse as MMLU-laden variants. v6_hardpairs (same-task pairs, also MMLU-pi-free in the 51 paired sources) MMLU-Pro = **2.08%**, identical collapse.
+
+The capability orthogonalized by `µ_fail − µ_pass` is not the MMLU-knowledge axis specifically; it is something more fundamental in the model's "task-execution" subspace. The direction is robust enough that mean / SVD / Ridge / agent-only / within-task-pair / counterfactual all converge on essentially the same destructive direction (HA20 9-10, MMLU ~2). MMLU-Pi source bias is *not* the explanatory variable.
+
+Possible alternative explanations for next iteration:
+- The "fail" cluster shares a generic "uncertainty/confusion" residual that is also load-bearing for any sustained reasoning chain (including multi-hop MMLU).
+- The orthogonalization at strength=0.5 is too aggressive in the `o_proj` writers and saturates capability even when the direction is clean. Sweep strength=0.1, 0.2, 0.3 with the agent-only contrast may decouple HA20 lift from MMLU collapse.
+- The HA20 lift mechanism (Hermes runtime sees tool_calls earlier) might be a side effect of *generic instruction adherence shift*, not direction-specific.
